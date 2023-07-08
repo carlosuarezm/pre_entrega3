@@ -13,9 +13,10 @@ class Cancion {
 
 //Clase Playlist
 class Playlist {
-    constructor(nombre) {
+    constructor(nombre, imagen) {
         this.nombre = nombre,
-            this.canciones = []
+            this.canciones = [],
+            this.imagen = imagen
     }
 
     //metodo para agregar una cancion
@@ -57,7 +58,7 @@ let playLists = []
 let listasguardadas = JSON.parse(localStorage.getItem("playlists"))
 //se cargan canciones a la playlist
 if (!listasguardadas) {
-    playLists.push(new Playlist("Top 50"))
+    playLists.push(new Playlist("Top 50", "Top 50.png"))
     playLists[0].agregarCancion(new Cancion("Viva la vida", "Coldplay", "2:34"))
     playLists[0].agregarCancion(new Cancion("Thinking out loud", "Ed Sheeran", "3:42"))
     playLists[0].agregarCancion(new Cancion("I can't feel my face", "The Weekend", "3:11"))
@@ -73,7 +74,19 @@ let lista = document.getElementById("lista-playlist")
 //Boton para crear la Playlist
 const buttonCreatePlaylist = document.getElementById("button-create-playlist")
 const buttonDeletePlaylist = document.getElementById("button-delete-playlist")
-const buttonShowPlaylist = document.getElementById("button-show-playlist")
+const buttonShowPlaylists = document.getElementById("button-ver-playlists")
+const divPlaylists = document.getElementById("div-playlists")
+let modalBodyCanciones = document.getElementById("modal-canciones")
+let tituloModalCanciones = document.getElementById("exampleModalLabel")
+const tituloCancion = document.getElementById("tituloInput")
+const artistaCancion = document.getElementById("artistaInput")
+const duracionCancion = document.getElementById("artistaInput")
+const playlistCancion = document.getElementById("playlistInput")
+const buttonAgregarCancion = document.getElementById("botonAgregarCancion")
+
+buttonShowPlaylists.addEventListener("click", () => {
+    mostrarTodasLasPlaylist()
+})
 
 buttonCreatePlaylist.addEventListener("click", (e) => {
     e.preventDefault()
@@ -81,6 +94,7 @@ buttonCreatePlaylist.addEventListener("click", (e) => {
     if (nombre.value) {
         crearPlaylist(nombre.value)
         nombre.value = ""
+        mostrarTodasLasPlaylist()
     }
 
 })
@@ -94,46 +108,35 @@ buttonDeletePlaylist.addEventListener("click", (e) => {
     }
 })
 
-buttonShowPlaylist.addEventListener("click", (e) => {
+buttonAgregarCancion.addEventListener("click", (e) => {
     e.preventDefault()
-    let nombre = document.getElementById("nombre-playlist")
-    if (nombre.value) {
-        mostrarCancionesDePlaylist(nombre.value)
-        nombre.value = ""
+    let titulo = tituloCancion.value
+    let artista = artistaCancion.value
+    let duracion = duracionCancion.value
+    //console.log(titulo != "" & artista != "" & duracion != "")
+    if (titulo != "" & artista != "" & duracion != "") {
+        let playlist = buscarPlaylistPorNombre(playlistCancion.value)
+        let cancion = new Cancion(titulo, artista, duracion)
+        agregarCancion(playlist, cancion)
+        localStorage.setItem("playlists", JSON.stringify(playLists))
+        tituloCancion.value = ""
+        artistaCancion.value = ""
+        duracionCancion.value = ""
+        playlistCancion.value = ""
+        mostrarTodasLasPlaylist()
     }
 })
 
-playLists.forEach(element => {
-    let item = document.createElement("li")
-    item.textContent = element.nombre
-    item.id = element.nombre
-    lista.append(item)
-});
-
-//Funcion para pedir al usuario el titulo de la cancion
-const ingresarCancion = (nombre) => {
-    if (nombre != null) {
-        let playlist = buscarPlaylistPorNombre(nombre)
-        if (playlist != undefined) {
-            let titulo = prompt("Ingrese el titulo de la canción")
-            let artista = prompt("Ingrese el artista de la canción")
-            let duracion = prompt("Ingrese la duración de la canción")
-            playlist.agregarCancion(new Cancion(titulo, artista, duracion))
-            alert(`Usted ha agregado la cancion "${titulo}" a la playlist "${playlist.nombre}"`)
-        } else {
-            alert(`No se ha encontrado playlist con el nombre ${nombre}`)
-        }
-    }
-}
-
 //Funcion para eliminar una cancion de la playlist
 const eliminarCancion = (titulo, playlist) => {
-
-    let cancion = playlist.eliminarCancionPorTitulo(titulo)
-    if (cancion != undefined) {
-        alert(`Se ha eliminado la cancion "${cancion.titulo}" de la playlist "${playlist.nombre}"`)
+    let cancion = playlist.canciones.find((cancion) => cancion.titulo == titulo)
+    let cancionIndex = playlist.canciones.indexOf(cancion)
+    if (cancionIndex >= 0) {
+        playlist.canciones.splice(cancionIndex, 1)
+        localStorage.setItem("playlists", JSON.stringify(playLists))
+        mostrarTodasLasPlaylist()
     } else {
-        alert(`No se ha encontrado la cancion "${titulo}" en la playlist "${playlist.nombre}"`)
+
     }
 
 }
@@ -143,16 +146,16 @@ const buscarPlaylistPorNombre = (nombre) => {
     return playLists.find(playlist => playlist.nombre.toLowerCase() == nombre.toLowerCase())
 }
 
+const agregarCancion = (playlist, cancion) => {
+    playlist.canciones.push(cancion)
+}
+
 //Funcion para pedirle los datos al usuario para crear la playlist
 const crearPlaylist = (nombre) => {
     if (nombre != null) {
         let playlist = buscarPlaylistPorNombre(nombre)
         if (playlist == undefined) {
-            playLists.push(new Playlist(nombre))
-            let item = document.createElement("li")
-            item.id = nombre
-            item.textContent = nombre
-            lista.append(item)
+            playLists.push(new Playlist(nombre, "default.png"))
             localStorage.setItem("playlists", JSON.stringify(playLists))
         } else {
             alert(`Ya existe una Playlist con el nombre "${nombre}"`)
@@ -173,31 +176,17 @@ const eliminarCancionDePlaylist = () => {
     }
 }
 
-//Funcion para mostrar al usuario la informacion de la playlist
-const mostrarPlaylist = (nombre) => {
-    if (nombre != null) {
-        const playlist = buscarPlaylistPorNombre(nombre)
-
-        if (playlist != undefined) {
-            alert(`La playlist ${playlist.nombre} tiene un total de ${playlist.cantidadDeCanciones()} canciones`)
-        } else {
-            alert(`No se ha encontrado la playlist ${nombre}`)
-        }
-    }
-}
-
 //funcion para eliminar una playlist por su nombre
 const eliminarPlaylistPorTitulo = (nombre) => {
     if (nombre != null) {
         let playlistIndex = playLists.indexOf(buscarPlaylistPorNombre(nombre))
         if (playlistIndex >= 0) {
             let eliminarLi = document.getElementById(nombre)
-            console.log(eliminarLi)
             lista.removeChild(eliminarLi)
             //let playlist = playLists[playlistIndex]
             playLists.splice(playlistIndex, 1)
             localStorage.setItem("playlists", JSON.stringify(playLists))
-            //alert(`Se eliminó la playlist ${playlist.nombre}`)
+            //alert(`Se eliminó la playlist ${playlist.nombre}`)    
 
         } else {
             alert(`No se encontró la playlist ${nombre}`)
@@ -211,16 +200,33 @@ const mostrarCancionesDePlaylist = (nombre) => {
         let playlist = buscarPlaylistPorNombre(nombre)
         if (playlist) {
             if (playlist.canciones.length > 0) {
+                tituloModalCanciones.innerText = playlist.nombre
+                modalBodyCanciones.innerHTML = ``
+                //primer for each imprime las card
+                playlist.canciones.forEach((cancion) => {
+                    modalBodyCanciones.innerHTML += `                
+                    <div class="card border-primary mb-3" id ="cancion${cancion.titulo}" style="max-width: 540px;">
+                    <div class="card-body">
+                    <h4 class="card-title">${cancion.titulo}</h4>
+                    <p class="card-text">${cancion.artista}</p>
+                    <p class="card-text">${cancion.duracion}</p> 
+                    <button class= "btn btn-danger" id="botonEliminar${cancion.titulo}"><i class="fas fa-trash-alt"></i>Eliminar</button>
+                    </div>    
+                    </div>                    
+                    `
+                })
 
-                let canciones = document.getElementById("canciones-playlist")
-                console.log(canciones)
-                canciones.innerHTML = ""
-                for (let index = 0; index < playlist.canciones.length; index++) {
-                    let cancion = playlist.canciones[index]
-                    let item = document.createElement("li")
-                    item.textContent = `Titulo: ${cancion.titulo} - Artista: ${cancion.artista} - Duracion: ${cancion.duracion}`
-                    canciones.append(item)
-                }
+                playlist.canciones.forEach((cancion) => {
+                    //manipular el DOM sin guardar en variable
+                    document.getElementById(`botonEliminar${cancion.titulo}`).addEventListener("click", () => {
+                        let cardCancnion = document.getElementById(`cancion${cancion.titulo}`)
+                        cardCancnion.remove()
+                        //borrar del array
+                        //encontramos objeto a eliminar
+                        eliminarCancion(cancion.titulo, playlist)
+                    })
+                })
+
             } else {
                 alert(`La playlist ${playlist.nombre} no tiene canciones`)
             }
@@ -261,77 +267,36 @@ const mostrarCancionesDePlaylistPorArtista = (nombre) => {
 const mostrarTodasLasPlaylist = () => {
 
     if (playLists.length > 0) {
-        let lista = `Lista de playlist creadas: \n`
-        for (let index = 0; index < playLists.length; index++) {
-            lista += `${index + 1}. ${playLists[index].nombre} \n`
+        divPlaylists.innerHTML = ""
+        let tituloDivPlaylists = document.createElement("div")
+        tituloDivPlaylists.innerHTML = `<h3 class="mostrar-playlists">Playlists</h3>`
+        divPlaylists.appendChild(tituloDivPlaylists)
+        for (let playlist of playLists) {
+            let nuevaPlayListDiv = document.createElement("div")
+            nuevaPlayListDiv.className = "col-12 col-md-6 col-lg-4 my-2"
+            nuevaPlayListDiv.innerHTML = `<div id="${playlist.nombre}" class="card" style="width: 19rem;">
+            <img class="card-img-top img-fluid" style="height: 200px;"src="assets/${playlist.imagen}" alt="${playlist.nombre}">
+            <div class="card-body">
+               <h4 class="card-title">${playlist.nombre}</h4>
+               <p>Canciones: ${playlist.canciones.length}</p>
+               <a id="agregarCancion${playlist.nombre}" data-bs-toggle="modal" data-bs-target="#idModalAgregarCancion" class="btn btn-secondary"><i class="fas fa-shopping-cart fa-1x">Agregar Cancion</i></a>
+               <a id="mostrarCanciones${playlist.nombre}" data-bs-toggle="modal" data-bs-target="#idModalCanciones" class="btn btn-secondary" ${playlist.canciones.length ? "" : "hidden"}><i class="fas fa-shopping-cart fa-1x">Ver canciones</i></a>
+               </div>
+            </div>`
+            //<button id="mostrarCanciones${playlist.nombre}" class="btn btn-outline-success">Mostrar canciones</button>
+            divPlaylists.appendChild(nuevaPlayListDiv)
+            let mostrarBtn = document.getElementById(`mostrarCanciones${playlist.nombre}`)
+            let agregarBtn = document.getElementById(`agregarCancion${playlist.nombre}`)
+
+            mostrarBtn.addEventListener("click", () => {
+                mostrarCancionesDePlaylist(playlist.nombre)
+            })
+
+            agregarBtn.addEventListener("click", () => {
+                playlistCancion.value = playlist.nombre
+            })
         }
-        alert(lista)
     } else {
         alert(`No hay playlist creadas aún`)
     }
 }
-
-
-//Funcion para mostrarle al usuario el menu
-const mostrarMenu = () => {
-    let opcion = prompt(`Seleccione una de las siguintes opciones, ingrese 0 para salir:
-    1. Crear playlist
-    2. Agregar cancion a playlist
-    3. Eliminar cancion de playlist
-    4. Consultar playlist
-    5. Mostrar todas las canciones de una playlist
-    6. Mostrar canciones por artista de una playlist
-    7. Mostrar todas las playlist
-    8. Eliminar playlist`)
-    if (opcion != null) {
-        opcion = parseInt(opcion)
-    }
-    return opcion
-}
-
-//Ciclo para preguntar al usuario la opcion a ingresar, finaliza cuando ingresa 0
-/*do {
-
-    let opcion = mostrarMenu()
-    switch (opcion) {
-        case 1:
-            crearPlaylist(prompt("Ingrese el titulo de la playlist que desea crear"))
-            break;
-        case 2:
-            ingresarCancion(prompt("Ingrese el nombre de la playlist donde añadir la canción"))
-            break;
-        case 3:
-            eliminarCancionDePlaylist()
-            break;
-        case 4:
-            mostrarPlaylist(prompt("Ingrese el nombre de la playlisy a consultar"))
-            break;
-        case 5:
-            mostrarCancionesDePlaylist(prompt("Ingrese el nombre de la playlisy a consultar"))
-            break;
-        case 6:
-            mostrarCancionesDePlaylistPorArtista(prompt("Ingrese el nombre de la playlisy a consultar"))
-            break;
-        case 7:
-            mostrarTodasLasPlaylist()
-            break;
-        case 8:
-            eliminarPlaylistPorTitulo(prompt("Ingrese el nombre de la playlist a eliminar"))
-            break;
-        case 0:
-            seguirIngresando = false
-            break;
-        case null:
-            seguirIngresando = false
-            break;
-        default:
-
-            if (opcion = ! false) {
-                alert("Opcion incorrecta, ingrese de nuevo")
-            } else {
-                seguirIngresando = false
-            }
-            break;
-    }
-
-} while (seguirIngresando);*/
