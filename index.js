@@ -69,9 +69,8 @@ if (!listasguardadas) {
     playLists = listasguardadas
 }
 
+//Se obtienen los elementos del HTML
 let lista = document.getElementById("lista-playlist")
-
-//Boton para crear la Playlist
 const buttonCreatePlaylist = document.getElementById("button-create-playlist")
 const buttonDeletePlaylist = document.getElementById("button-delete-playlist")
 const buttonShowPlaylists = document.getElementById("button-ver-playlists")
@@ -80,14 +79,16 @@ let modalBodyCanciones = document.getElementById("modal-canciones")
 let tituloModalCanciones = document.getElementById("exampleModalLabel")
 const tituloCancion = document.getElementById("tituloInput")
 const artistaCancion = document.getElementById("artistaInput")
-const duracionCancion = document.getElementById("artistaInput")
+const duracionCancion = document.getElementById("duracionInput")
 const playlistCancion = document.getElementById("playlistInput")
 const buttonAgregarCancion = document.getElementById("botonAgregarCancion")
 
+//Se agrega el boton la funcion para mostrar la lista en el HTML
 buttonShowPlaylists.addEventListener("click", () => {
     mostrarTodasLasPlaylist()
 })
 
+//Boton con el evento para crear una playlist
 buttonCreatePlaylist.addEventListener("click", (e) => {
     e.preventDefault()
     let nombre = document.getElementById("nombre-playlist")
@@ -99,6 +100,7 @@ buttonCreatePlaylist.addEventListener("click", (e) => {
 
 })
 
+//boton con el evento para eliminar una playlist
 buttonDeletePlaylist.addEventListener("click", (e) => {
     e.preventDefault()
     let nombre = document.getElementById("nombre-playlist")
@@ -108,6 +110,7 @@ buttonDeletePlaylist.addEventListener("click", (e) => {
     }
 })
 
+//boton para agregar una canción a la playlist
 buttonAgregarCancion.addEventListener("click", (e) => {
     e.preventDefault()
     let titulo = tituloCancion.value
@@ -146,6 +149,7 @@ const buscarPlaylistPorNombre = (nombre) => {
     return playLists.find(playlist => playlist.nombre.toLowerCase() == nombre.toLowerCase())
 }
 
+//funcion para agregar una cacnión
 const agregarCancion = (playlist, cancion) => {
     playlist.canciones.push(cancion)
 }
