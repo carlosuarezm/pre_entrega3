@@ -1,0 +1,27 @@
+[
+    {
+        "titulo": "Viva la vida",
+        "artista": "Coldplay",
+        "duracion": "2:34"
+    },
+    {
+        "titulo": "Thinking out loud",
+        "artista": "Ed Sheeran",
+        "duracion": "3:42"
+    },
+    {
+        "titulo": "I can't feel my face",
+        "artista": "The Weekend",
+        "duracion": "3:11"
+    },
+    {
+        "titulo": "Fix You",
+        "artista": "Coldplay",
+        "duracion": "4:59"
+    },
+    {
+        "titulo": "Música ligera",
+        "artista": "Soda Estereo",
+        "duracion": "3:26"
+    }
+]

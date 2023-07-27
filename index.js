@@ -53,18 +53,26 @@ class Playlist {
     }
 }
 
+const cargarPlaylist = async (playLists) => {
+    console.log("Leo lasPlaylist")
+    const res = await fetch("canciones.json")
+    const data = await res.json()
+    let playList = new Playlist("Top 50", "Top 50.png")
+    for (let cancion of data) {
+        let cancionData = new Cancion(cancion.titulo, cancion.artista, cancion.duracion)
+        playList.canciones.push(cancionData)
+    }
+    playLists.push(playList)
+    localStorage.setItem("playlists", JSON.stringify(playLists))
+
+}
+
 //Array para guardar las playlist que se creen, inicializado con una playlist
 let playLists = []
 let listasguardadas = JSON.parse(localStorage.getItem("playlists"))
 //se cargan canciones a la playlist
 if (!listasguardadas) {
-    playLists.push(new Playlist("Top 50", "Top 50.png"))
-    playLists[0].agregarCancion(new Cancion("Viva la vida", "Coldplay", "2:34"))
-    playLists[0].agregarCancion(new Cancion("Thinking out loud", "Ed Sheeran", "3:42"))
-    playLists[0].agregarCancion(new Cancion("I can't feel my face", "The Weekend", "3:11"))
-    playLists[0].agregarCancion(new Cancion("Fix You", "Coldplay", "4:59"))
-    playLists[0].agregarCancion(new Cancion("Música ligera", "Soda Estereo", "3:26"))
-    localStorage.setItem("playlists", JSON.stringify(playLists))
+    cargarPlaylist(playLists)
 } else {
     playLists = listasguardadas
 }
@@ -73,7 +81,7 @@ if (!listasguardadas) {
 let lista = document.getElementById("lista-playlist")
 const buttonCreatePlaylist = document.getElementById("button-create-playlist")
 const buttonDeletePlaylist = document.getElementById("button-delete-playlist")
-const buttonShowPlaylists = document.getElementById("button-ver-playlists")
+//const buttonShowPlaylists = document.getElementById("button-ver-playlists")
 const divPlaylists = document.getElementById("div-playlists")
 let modalBodyCanciones = document.getElementById("modal-canciones")
 let tituloModalCanciones = document.getElementById("exampleModalLabel")
@@ -82,11 +90,13 @@ const artistaCancion = document.getElementById("artistaInput")
 const duracionCancion = document.getElementById("duracionInput")
 const playlistCancion = document.getElementById("playlistInput")
 const buttonAgregarCancion = document.getElementById("botonAgregarCancion")
+let loader = document.getElementById("loader")
+let loaderTexto = document.getElementById("loaderTexto")
 
 //Se agrega el boton la funcion para mostrar la lista en el HTML
-buttonShowPlaylists.addEventListener("click", () => {
+/* buttonShowPlaylists.addEventListener("click", () => {
     mostrarTodasLasPlaylist()
-})
+}) */
 
 //Boton con el evento para crear una playlist
 buttonCreatePlaylist.addEventListener("click", (e) => {
@@ -96,6 +106,15 @@ buttonCreatePlaylist.addEventListener("click", (e) => {
         crearPlaylist(nombre.value)
         nombre.value = ""
         mostrarTodasLasPlaylist()
+    } else {
+        Swal.fire({
+            title: `Debe ingresar un titulo para crear la playlist`,
+            icon: "error",
+            //tiempo de aparición: en milisegundos
+            timer: 2000,
+            showConfirmButton: false
+
+        })
     }
 
 })
@@ -107,6 +126,15 @@ buttonDeletePlaylist.addEventListener("click", (e) => {
     if (nombre.value) {
         eliminarPlaylistPorTitulo(nombre.value)
         nombre.value = ""
+    } else {
+        Swal.fire({
+            title: `Debe ingresar un titulo para eliminar la playlist`,
+            icon: "error",
+            //tiempo de aparición: en milisegundos
+            timer: 2000,
+            showConfirmButton: false
+
+        })
     }
 })
 
@@ -186,11 +214,11 @@ const eliminarPlaylistPorTitulo = (nombre) => {
         let playlistIndex = playLists.indexOf(buscarPlaylistPorNombre(nombre))
         if (playlistIndex >= 0) {
             let eliminarLi = document.getElementById(nombre)
-            lista.removeChild(eliminarLi)
+            //eliminarLi.remove()
             //let playlist = playLists[playlistIndex]
             playLists.splice(playlistIndex, 1)
             localStorage.setItem("playlists", JSON.stringify(playLists))
-            //alert(`Se eliminó la playlist ${playlist.nombre}`)    
+            mostrarTodasLasPlaylist()
 
         } else {
             alert(`No se encontró la playlist ${nombre}`)
@@ -300,7 +328,20 @@ const mostrarTodasLasPlaylist = () => {
                 playlistCancion.value = playlist.nombre
             })
         }
+        //buttonShowPlaylists.style.display = "initial"
+        buttonDeletePlaylist.style.display = "initial"
     } else {
-        alert(`No hay playlist creadas aún`)
+        divPlaylists.innerHTML = ""
+        let tituloDivPlaylists = document.createElement("div")
+        tituloDivPlaylists.innerHTML = `<h3 class="mostrar-playlists">No hay playlists creadas aún</h3>`
+        divPlaylists.appendChild(tituloDivPlaylists)
+        //buttonShowPlaylists.style.display = "none"
+        buttonDeletePlaylist.style.display = "none"
     }
 }
+
+setTimeout(() => {
+    loaderTexto.remove()
+    loader.remove()
+    mostrarTodasLasPlaylist()
+}, 2500)
